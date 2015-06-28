@@ -164,8 +164,53 @@
                 potato.infested = true;
                 
             }
-            
+            function updateControlsForPotato(){
+                $("#potatoStatusTitle").html("Potato " + currentPotatoIndex + " Status");
+                var potato = potatoes[currentPotatoIndex];
+                if(potato){
+                    if(waterCharge <= 0){
+                       $("#waterButton").prop("disabled",true); 
+                    }else{
+                        $("#waterButton").prop("disabled",false);
+                    }
+                    
+                    if(fertCharge <= 0){
+                        $("#fertButton").prop("disabled",true);
+                    }else{
+                        $("#fertButton").prop("disabled",false);
+                    }
+                    
+                    if(soapCharge <= 0 && tobaccoExtractCharge <= 0 && insecticideCharge <=0 &&orbitalStrikeCharge <=0){
+                        $("#bugButton").prop("disabled",true);
+                    }else{
+                        $("#bugButton").prop("disabled",false);
+                    }
+                    
+                    if(firecrackerCharge <= 0 && aaGunCharge <=0 && samCharge <=0 && orbitalStrikeCharge <=0){
+                        $("#birdButton").prop("disabled",true);
+                    }else{
+                        $("#birdButton").prop("disabled",false);
+                    }
+                }else{
+                    //disable water button
+                    $("#waterButton").prop("disabled",true);
+                    //disable fertilize button
+                    $("#fertButton").prop("disabled",true);
+                    //disable anti bug button
+                    $("#bugButton").prop("disabled",true);
+                    //disable anti bird button
+                    $("#birdButton").prop("disabled",true);
+                    //disable harvest button
+                    $("#harvestButton").prop("disabled",true);
+                }
+            }
             $("document").ready(function(){
+                //potato navigation
+                $("input[name='potatoRadio']").change(function(){
+                    console.log($(this).val());
+                    currentPotatoIndex = parseInt($(this).val());
+                    updateControlsForPotato();
+                });
                 //water button handler
                 $("#waterButton").click(function(){
                     waterCharge -= parseInt($("#waterSlider").val());
@@ -250,56 +295,67 @@
                     score += Math.floor(potato.weight*(potato.health/100));
                 });
                 //plant button handler
+                $("#plantButton").click(function(){
+                    score -= 5;
+                    potatoes[currentPotatoIndex] = getPotato();
+
+                    
+                });
+                //create potatoes
                 for(var i = 0; i < 10; i++){
                     potatoes.push(getPotato());
                 }
+                //game loop
                 setInterval(function(){
                     potatoes.forEach(function(p){
-                        if(p.water > 0){
-                            p.water -=.2;
-                        }else{
-                            p.water = 0;
-                        }
-                        if(p.nutrients > 0){
-                            p.nutrients -=.1;
-                        }else{
-                            p.water = 0;
-                        }
-                        if(p.water <= 0 || p.nutrients <= 0 || p.health <= 0){
-                            p.alive = false;
-                            p.health = 0;
-                        }
-                        if(p.alive){
-                            if(p.water/p.maxWater < .75){
-                                p.health -= 1;
+                        updateControlsForPotato()
+                        if(p){
+                            if(p.water > 0){
+                                p.water -=.2;
+                            }else{
+                                p.water = 0;
                             }
-                            if(p.nutrients/p.maxNutrients > .8){
-                                p.weight += .02
+                            if(p.nutrients > 0){
+                                p.nutrients -=.1;
+                            }else{
+                                p.water = 0;
                             }
-                            if(p.nutrients/p.maxNutrients > .6){
-                                p.weight += .01
+                            if(p.water <= 0 || p.nutrients <= 0 || p.health <= 0){
+                                p.alive = false;
+                                p.health = 0;
                             }
-                            if(p.nutrients/p.maxNutrients <.5){
-                                p.weight -= .01
+                            if(p.alive){
+                                if(p.water/p.maxWater < .75){
+                                    p.health -= 1;
+                                }
+                                if(p.nutrients/p.maxNutrients > .8){
+                                    p.weight += .02
+                                }
+                                if(p.nutrients/p.maxNutrients > .6){
+                                    p.weight += .01
+                                }
+                                if(p.nutrients/p.maxNutrients <.5){
+                                    p.weight -= .01
+                                }
+                                if(p.nutrients/p.maxNutrients <.4){
+                                    p.weight -= .01
+                                }
+                                if(p.nutrients/p.maxNutrients <.3){
+                                    p.weight -= .01
+                                    p.heath -=1;
+                                }
+                                if(p.infested){
+                                    p.health -=1;
+                                }
+                                //drowning
+                                //fert burn
+                                //dusty dry on fire     
+                                //bug attack chance
+                                if(Math.random() < .05){
+                                    bugAttack(p);
+                                }
+                                //bird attack chance
                             }
-                            if(p.nutrients/p.maxNutrients <.4){
-                                p.weight -= .01
-                            }
-                            if(p.nutrients/p.maxNutrients <.3){
-                                p.weight -= .01
-                                p.heath -=1;
-                            }
-                            if(p.infested){
-                                p.health -=1;
-                            }
-                            //drowning
-                            //fert burn
-                            //dusty dry on fire     
-                            //bug attack chance
-                            if(Math.random() < .05){
-                                bugAttack(p);
-                            }
-                            //bird attack chance
                         }
                     });
                     //update potato status
@@ -346,7 +402,7 @@
                 </div>
             </header>
             <div class='left'>
-                <h2>Potato Status</h2>
+                <h2 id="potatoStatusTitle">Potato Status</h2>
                 <div id="potatoCam">
                     <img src="potato.png"/>
                 </div>
@@ -395,16 +451,16 @@
                 <div>
                     <span class="fullRow">
                         Current Potato
-                        <input type="radio" name="potatoRadio">P1</input>
-                        <input type="radio" name="potatoRadio">P2</input>
-                        <input type="radio" name="potatoRadio">P3</input>
-                        <input type="radio" name="potatoRadio">P4</input>
-                        <input type="radio" name="potatoRadio">P5</input>
-                        <input type="radio" name="potatoRadio">P6</input>
-                        <input type="radio" name="potatoRadio">P7</input>
-                        <input type="radio" name="potatoRadio">P8</input>
-                        <input type="radio" name="potatoRadio">P9</input>
-                        <input type="radio" name="potatoRadio">P10</input>
+                        <input type="radio" name="potatoRadio" checked="checked" value="0">P1</input>
+                        <input type="radio" name="potatoRadio" value="1">P2</input>
+                        <input type="radio" name="potatoRadio" value="2">P3</input>
+                        <input type="radio" name="potatoRadio" value="3">P4</input>
+                        <input type="radio" name="potatoRadio" value="4">P5</input>
+                        <input type="radio" name="potatoRadio" value="5">P6</input>
+                        <input type="radio" name="potatoRadio" value="6">P7</input>
+                        <input type="radio" name="potatoRadio" value="7">P8</input>
+                        <input type="radio" name="potatoRadio" value="8">P9</input>
+                        <input type="radio" name="potatoRadio" value="9">P10</input>
                     </span>
                     <span class="fullRow">
                         <label for="waterAmount">Water Amount</label>
