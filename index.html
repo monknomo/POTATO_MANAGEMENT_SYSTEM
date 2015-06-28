@@ -1,0 +1,481 @@
+<html>
+    <head>
+        <style>        
+            body{
+                background:ghostwhite;
+            }
+            .container{
+                border:.2em solid black;
+                float:left;
+                width:100%;
+                background:silver;
+            }
+
+            header.top {
+                width:100%;
+                background:green;
+                float:left;      
+            }
+
+            div.left{
+                width:45%;
+                float:left;
+                background:honeydew;
+                clear:left;
+            }
+
+            div.right{
+                width:45%;
+                float:right;
+                background:lavender;
+                clear:right;  
+            }
+
+            footer.bottom{
+                clear:both;
+            }
+            table, th, td{
+                border: .1em solid black;
+            }
+            
+            th{
+                background:skyblue;
+            }
+            
+            tr:nth-child(odd) {
+                background:ghostwhite;
+            }
+            
+            tr:nth-child(even) {
+                background:skyblue;
+            }
+            
+            #potatoCam{
+                background:springgreen;
+                border-radius: 1em;
+                text-align:center;
+                padding:1em;
+            }
+            span.fullRow{
+                width:100%;
+                clear:both;
+                float:left;
+            }
+            
+            div.fullRow{
+                width:100%;
+                clear:both;
+                float:left;
+            }
+            
+            .meter { 
+                height: .5em;  /* Can be anything */
+                position: relative;
+                background: #555;
+                -moz-border-radius: .5em;
+                -webkit-border-radius: .5em;
+                border-radius: .5em;
+                padding: .3em;
+                box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
+            }
+
+            .meter > span {
+              display: block;
+              height: 100%;
+              border-top-right-radius: .4em;
+              border-bottom-right-radius: .4em;
+              border-top-left-radius: .9em;
+              border-bottom-left-radius: .9em;
+              background-color: rgb(43,194,83);
+              background-image: linear-gradient(
+                center bottom,
+                rgb(43,194,83) 37%,
+                rgb(84,240,84) 69%
+              );
+              box-shadow: 
+                inset 0 2px 9px  rgba(255,255,255,0.3),
+                inset 0 -2px 6px rgba(0,0,0,0.4);
+              position: relative;
+              overflow: hidden;
+            }
+
+            .orange > span {
+              background-color: #f1a165;
+              background-image: linear-gradient(to bottom, #f1a165, #f36d0a);
+            }
+
+            .red > span {
+              background-color: #f0a3a3;
+              background-image: linear-gradient(to bottom, #f0a3a3, #f42323);
+            }
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script>
+            var potatoes = [];
+            function getPotato(){
+                return { health:100,
+                        maxHealth:100,
+                    water:100,
+                    maxWater:100,
+                    nutrients:100,
+                    maxNutrients:100,
+                    weight:1,
+                    organic:true,
+                    onFire:false,
+                    infested:false,
+                    alive:true,
+                    harvested:false,
+                    getPresentationJSON:function(){
+                        return {
+                            health: Math.floor(100 * (this.health / this.maxHealth)),
+                            water: Math.floor(100 * (this.water / this.maxWater)),
+                            nutrients: Math.floor(100 * (this.nutrients / this.maxNutrients)),
+                            weight:this.weight,
+                            organic:this.organic,
+                            onFire:this.onFire,
+                            infested:this.infested,
+                            alive:this.alive,
+                            harvested:this.harvested
+                        }
+                    }};
+                }
+            var score = 0;
+            var waterCharge = 100;
+            var fertCharge = 100;
+            var soapCharge = 100;
+            var soapChargeRate = .20;
+            var tobaccoExtractCharge = 100;
+            var tobaccoExtractChargeRate = .15;
+            var insecticideCharge = 100;
+            var insecticideChargeRate = .17;
+            var orbitalStrikeCharge = 100;
+            var orbitalStrikeChargeRate = .1;
+            var firecrackerCharge = 100;
+            var fireCrackerChargeRate = .15;
+            var aaGunCharge = 100;
+            var aaGunChargeRate = .7;
+            var samCharge = 100;
+            var samChargeRate = .5;
+                        
+            var currentPotatoIndex = 0;
+            
+            function bugAttack(potato){
+                //var potato = potatoes[index];
+                potato.infested = true;
+                
+            }
+            
+            $("document").ready(function(){
+                //water button handler
+                $("#waterButton").click(function(){
+                    waterCharge -= parseInt($("#waterSlider").val());
+                    potatoes[currentPotatoIndex].water += parseInt($("#waterSlider").val());
+                    potatoes[currentPotatoIndex].onFire = false;
+                    if(waterCharge < 0 || isNaN(waterCharge)){
+                        waterCharge =0;
+                    }
+                });                                
+                //fertilizer button handler
+                $("#fertButton").click(function(){
+                    fertCharge -= parseInt($("#fertSlider").val());
+                    if($("input:radio[name=fertType]:checked").val()=="organic"){
+                        potatoes[currentPotatoIndex].nutrients += Math.floor(parseInt($("#fertSlider").val())/2);
+                    }else if($("input:radio[name=fertType]:checked").val()=="chemical"){
+                        potatoes[currentPotatoIndex].nutrients += parseInt($("#fertSlider").val());
+                        potatoes[currentPotatoIndex].organic = false;
+                    }
+                    console.log(potatoes[currentPotatoIndex]);
+                    if(fertCharge <0 || isNaN(fertCharge)){
+                        fertCharge = 0;
+                    }
+                });
+                //anti bug button handler
+                $("#bugButton").click(function(){
+                    if($("#dishsoapCheckbox").prop("checked")){
+                        soapCharge -= 10;
+                        if(soapCharge < 0){
+                            soapCharge = 0;
+                            }
+                    }
+                    if($("#organicInsecticideCheckbox").prop("checked")){
+                        tobaccoExtractCharge -= 20;
+                        
+                        if(tobaccoExtractCharge < 0){
+                            tobaccoExtractCharge = 0;
+                            }
+                    }
+                    if($("#insecticideCheckbox").prop("checked")){
+                        insecticideCharge -= 10;
+                        potatoes[currentPotatoIndex].organic = false;
+                        if(insecticideCharge < 0){
+                            insecticideCharge = 0;
+                            }
+                    }
+                    if($("#bugOrbitalStrikeCheckbox").prop("checked") && orbitalStrikeCharge >= 100){
+                        orbitalStrikeCharge = 0;
+                        if(orbitalStrikeCharge < 0){
+                            orbitalStrikeCharge = 0;
+                            }
+                    }
+                });
+                //anti bird button handler
+                $("#birdButton").click(function(){
+                    if($("#firecrackerCheckbox").prop("checked") && firecrackerCharge >= 10){
+                        firecrackerCharge -= 10;
+                        if(firecrackerCharge < 0){
+                            firecrackerCharge = 0;
+                        }
+                    }
+                    if($("#aaGunCheckbox").prop("checked") && aaGunCharge >= 25){
+                        aaGunCharge -= 25
+                        potatoes[currentPotatoIndex].organic = false;
+                        if(aaGunCharge <0){
+                            aaGunCharge =0;
+                        }
+                    }
+                    if($("#samCheckbox").prop("checked") && samCharge >= 50){
+                        samCharge -= 50;
+                        potatoes[currentPotatoIndex].organic = false;
+                        if(samCharge<0){
+                            samCharge = 0;
+                        }
+                    }
+                    if($("#birdOrbitalStrikeCheckbox").prop("checked") && orbitalStrikeCharge >= 100){
+                        orbitalStrikeCharge = 0;
+                    }
+                });
+                //harvest button handler
+                $("#harvestButton").click(function(){
+                    var potato = potatoes[currentPotatoIndex];
+                    score += Math.floor(potato.weight*(potato.health/100));
+                });
+                //plant button handler
+                for(var i = 0; i < 10; i++){
+                    potatoes.push(getPotato());
+                }
+                setInterval(function(){
+                    potatoes.forEach(function(p){
+                        if(p.water > 0){
+                            p.water -=.2;
+                        }else{
+                            p.water = 0;
+                        }
+                        if(p.nutrients > 0){
+                            p.nutrients -=.1;
+                        }else{
+                            p.water = 0;
+                        }
+                        if(p.water <= 0 || p.nutrients <= 0 || p.health <= 0){
+                            p.alive = false;
+                            p.health = 0;
+                        }
+                        if(p.alive){
+                            if(p.water/p.maxWater < .75){
+                                p.health -= 1;
+                            }
+                            if(p.nutrients/p.maxNutrients > .8){
+                                p.weight += .02
+                            }
+                            if(p.nutrients/p.maxNutrients > .6){
+                                p.weight += .01
+                            }
+                            if(p.nutrients/p.maxNutrients <.5){
+                                p.weight -= .01
+                            }
+                            if(p.nutrients/p.maxNutrients <.4){
+                                p.weight -= .01
+                            }
+                            if(p.nutrients/p.maxNutrients <.3){
+                                p.weight -= .01
+                                p.heath -=1;
+                            }
+                            if(p.infested){
+                                p.health -=1;
+                            }
+                            //drowning
+                            //fert burn
+                            //dusty dry on fire     
+                            //bug attack chance
+                            if(Math.random() < .05){
+                                bugAttack(p);
+                            }
+                            //bird attack chance
+                        }
+                    });
+                    //update potato status
+                    var displayPotato = potatoes[currentPotatoIndex].getPresentationJSON();
+                    $("#potatoHealth").html(displayPotato.health + "%");
+                    $("#potatoWater").html(displayPotato.water+ "%");
+                    $("#potatoNutrients").html(displayPotato.nutrients + "%");
+                    $("#potatoWeight").html(displayPotato.weight.toFixed(2));
+                    $("#potatoAlive").html(displayPotato.alive.toString());
+                    $("#potatoOnFire").html(displayPotato.onFire.toString());
+                    $("#potatoInfested").html(displayPotato.infested.toString());
+                    //update potato controls
+                    $("#waterMeter").val(waterCharge);
+                    $("#fertMeter").val(fertCharge);
+                    $("#soapMeter").val(soapCharge);
+                    $("#tobaccoMeter").val(tobaccoExtractCharge);
+                    $("#insecticideMeter").val(insecticideCharge);
+                    $("#bugOrbitalStrikeMeter").val(orbitalStrikeCharge);
+                    $("#birdOrbitalStrikeMeter").val(orbitalStrikeCharge);
+                    $("#firecrackersMeter").val(firecrackerCharge);
+                    $("#aaMeter").val(aaGunCharge);
+                    $("#samMeter").val(samCharge);
+                    //recharge resources
+                    if(soapCharge < 100){
+                    soapCharge += soapChargeRate;
+                    }else{
+                        soapCharge = 100;
+                    }
+                    tobaccoExtractCharge += tobaccoExtractChargeRate;
+                    insecticideCharge += insecticideChargeRate;
+                    orbitalStrikeCharge += orbitalStrikeChargeRate;
+                }, 200);
+                
+
+            });
+        </script>
+    </head>
+    <body>
+        <article class='container'>
+            <header class="top">
+                <h1>Potato Management System V1.0.0</h1>
+                <div id="scoreboard">
+                    Funds: $10000 Potatos: 10 Time to Harvest: 1:00
+                </div>
+            </header>
+            <div class='left'>
+                <h2>Potato Status</h2>
+                <div id="potatoCam">
+                    <img src="potato.png"/>
+                </div>
+                <table class="container" id="potatoStatus">
+                    <thead>
+                    <tr><th>Stat</th><th>Value</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td align="right">Health: </td>
+                        <td id="potatoHealth" align="left">100%</td>
+                    </tr>
+                    <tr>
+                        <td align="right">Alive: </td>
+                        <td id="potatoAlive" align="left">true</td>
+                    </tr>
+                    <tr>
+                        <td align="right">Weight: </td>
+                        <td id="potatoWeight" align="left">1</td>
+                    </tr>
+                    <tr>
+                        <td align="right">Water: </td>
+                        <td id="potatoWater" align="left">100%</td>
+                    </tr>
+                    <tr>
+                        <td align="right">Nutrients: </td>
+                        <td id="potatoNutrients" align="left">100%</td>
+                    </tr>
+                    <tr>
+                        <td align="right">Organic: </td>
+                        <td id="potatoOrganic" align="left">true</td>
+                    </tr>
+                    <tr>
+                        <td align="right">On Fire: </td>
+                        <td id="potatoOnFire" align="left">true</td>
+                    </tr>
+                    <tr>
+                        <td align="right">Infested: </td>
+                        <td id="potatoInfested" align="left">true</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class='right'>
+                <h2>Potato Controls</h2>
+                <div>
+                    <span class="fullRow">
+                        Current Potato
+                        <input type="radio" name="potatoRadio">P1</input>
+                        <input type="radio" name="potatoRadio">P2</input>
+                        <input type="radio" name="potatoRadio">P3</input>
+                        <input type="radio" name="potatoRadio">P4</input>
+                        <input type="radio" name="potatoRadio">P5</input>
+                        <input type="radio" name="potatoRadio">P6</input>
+                        <input type="radio" name="potatoRadio">P7</input>
+                        <input type="radio" name="potatoRadio">P8</input>
+                        <input type="radio" name="potatoRadio">P9</input>
+                        <input type="radio" name="potatoRadio">P10</input>
+                    </span>
+                    <span class="fullRow">
+                        <label for="waterAmount">Water Amount</label>
+                        <input type="range" name="waterAmount" id="waterSlider" min="0" step="5" value="50" max="100"></input>
+                        <meter id="waterMeter" value="100" min="0" max="100"></meter>
+                    </span>
+                    <span class="fullRow">
+                        <button id="waterButton">Water</button>
+                    </span>
+                    <span class="fullRow">
+                        <label for="fertAmount">Fertilizer Amount</label>
+                        <input type="range" name="fertAmount" min="0" max="100" step="5"  step="5" value="50" id="fertSlider"></input>
+                        <meter id="fertMeter" value="100" min="0" max="100"></meter>
+                    </span>
+                    <span class="fullRow">
+                        <input type="radio" name="fertType" value="organic" checked="checked">Organic</input>
+                        <input type="radio" name="fertType" value="chemical">Chemical</input>
+                    </span>
+                    <span class="fullRow">
+                        <button id="fertButton">Fertilize</button>
+                    </span>
+                    <span class="fullRow">
+                        <input id="dishsoapCheckbox" type="checkbox" name="dishsoap">Gentle Soap</input>
+                        <input id="organicInsecticideCheckbox" type="checkbox" name="organicInsecticide">Tobacco Extract</input>
+                        <input id="insecticideCheckbox" type="checkbox" name="insecticide">Insecticide</input>
+                        <input id="bugOrbitalStrikeCheckbox" type="checkbox" name="birdOrbitalStrike">Orbital Strike</input>
+                    </span>
+                    <div class="fullRow">
+                        Gentle Soap Charge
+                        <meter id="soapMeter" value="100" min="0" max="100"></meter>
+                        Tobacco Extract Charge
+                        <meter id="tobaccoMeter" value="100" min="0" max="100"></meter>
+                        Insecticide Charge
+                        <meter id="insecticideMeter" value="100" min="0" max="100"></meter>
+                        Orbital Strike Charge
+                        <meter id="bugOrbitalStrikeMeter" value="100" min="0" max="100"></meter>
+                    </div>
+                    <span class="fullRow">
+                        <button id="bugButton">Fire Anti Bug Measures</button>
+                    </span>
+                    <span class="fullRow">
+                        <input id="firecrackerCheckbox" type="checkbox" name="birdFirecracker">Firecrackers</input>
+                        <input id="aaGunCheckbox" type="checkbox" name="birdGun">AA Gun</input>
+                        <input id="samCheckbox" type="checkbox" name="birdRocket">SAM</input>
+                        <input id="birdOrbitalStrikeCheckbox" type="checkbox" name="birdOrbitalStrike">Orbital Strike</input>
+                    </span>
+                    <div class="fullRow">
+                        Firecrackers Charge
+                        <meter id="firecrackersMeter" value="100" min="0" max="100"></meter>
+                        AA Gun Charge
+                        <meter id="aaMeter" value="100" min="0" max="100"></meter>
+                        SAM Charge
+                        <meter id="samMeter" value="100" min="0" max="100"></meter>
+                        Orbital Strike Charge
+                        <meter id="birdOrbitalStrikeMeter" value="100" min="0" max="100"></meter>
+                    </div>
+                    <span class="fullRow">
+                        <button id="birdButton">Fire Anti Bird Measures</button>
+                    </span>
+                    <span class="fullRow">
+                        <button>Harvest</button>
+                    </span>
+                    <span class="fullRow">
+                        <button>Plant</button>
+                    </span>
+                </div>
+            </div>
+            <footer class="bottom">
+                <h2>Live Potato Updates</h2>
+                <span id="potatoCrawl">Potatoes on strike!</span>
+            </footer>
+        </article>
+    </body>
+</html>
