@@ -158,16 +158,28 @@
             var samChargeRate = .5;
                         
             var currentPotatoIndex = 0;
-            
+            var harvestedPotatoes = [];
             function bugAttack(potato){
                 //var potato = potatoes[index];
                 potato.infested = true;
                 
             }
+            
+            function updateScoreboard(){
+                var numPotatoes = harvestedPotatoes.length;
+                potatoes.forEach(function(p){
+                    if(p){
+                        numPotatoes += 1;
+                    }
+                });
+                $("#scoreboard").html("Score: " + score + " Potatoes: " + numPotatoes + " Time to Harvest: ");
+            }
+            
             function updateControlsForPotato(){
-                $("#potatoStatusTitle").html("Potato " + currentPotatoIndex + " Status");
+                $("#potatoStatusTitle").html("Potato " + (currentPotatoIndex+1) + " Status");
                 var potato = potatoes[currentPotatoIndex];
                 if(potato){
+                    $("#potatoCam").html("<img src='potato.png'></img>");
                     if(waterCharge <= 0){
                        $("#waterButton").prop("disabled",true); 
                     }else{
@@ -191,7 +203,10 @@
                     }else{
                         $("#birdButton").prop("disabled",false);
                     }
+                    $("#harvestButton").prop("disabled",false);
+                    $("#plantButton").prop("disabled",true);
                 }else{
+                    $("#potatoCam").html("<img src='nopotato.png'></img>");
                     //disable water button
                     $("#waterButton").prop("disabled",true);
                     //disable fertilize button
@@ -202,6 +217,7 @@
                     $("#birdButton").prop("disabled",true);
                     //disable harvest button
                     $("#harvestButton").prop("disabled",true);
+                    $("#plantButton").prop("disabled",false);
                 }
             }
             $("document").ready(function(){
@@ -293,6 +309,8 @@
                 $("#harvestButton").click(function(){
                     var potato = potatoes[currentPotatoIndex];
                     score += Math.floor(potato.weight*(potato.health/100));
+                    harvestedPotatoes.push(potato);
+                    potatoes[currentPotatoIndex] = null;
                 });
                 //plant button handler
                 $("#plantButton").click(function(){
@@ -359,7 +377,9 @@
                         }
                     });
                     //update potato status
-                    var displayPotato = potatoes[currentPotatoIndex].getPresentationJSON();
+                    var currentPotato = potatoes[currentPotatoIndex];                    
+                    if(currentPotato){
+                       var displayPotato = currentPotato.getPresentationJSON();
                     $("#potatoHealth").html(displayPotato.health + "%");
                     $("#potatoWater").html(displayPotato.water+ "%");
                     $("#potatoNutrients").html(displayPotato.nutrients + "%");
@@ -367,6 +387,15 @@
                     $("#potatoAlive").html(displayPotato.alive.toString());
                     $("#potatoOnFire").html(displayPotato.onFire.toString());
                     $("#potatoInfested").html(displayPotato.infested.toString());
+                    }else{
+                        $("#potatoHealth").html("null%");
+                    $("#potatoWater").html("null%");
+                    $("#potatoNutrients").html("null%");
+                    $("#potatoWeight").html("null");
+                    $("#potatoAlive").html("null");
+                    $("#potatoOnFire").html("null");
+                    $("#potatoInfested").html("null");
+                    }
                     //update potato controls
                     $("#waterMeter").val(waterCharge);
                     $("#fertMeter").val(fertCharge);
@@ -398,7 +427,7 @@
             <header class="top">
                 <h1>Potato Management System V1.0.0</h1>
                 <div id="scoreboard">
-                    Funds: $10000 Potatos: 10 Time to Harvest: 1:00
+                    Score: 0 Potatoes: 10 Time to Final Harvest: 10:00
                 </div>
             </header>
             <div class='left'>
@@ -521,10 +550,10 @@
                         <button id="birdButton">Fire Anti Bird Measures</button>
                     </span>
                     <span class="fullRow">
-                        <button>Harvest</button>
+                        <button id="harvestButton">Harvest</button>
                     </span>
                     <span class="fullRow">
-                        <button>Plant</button>
+                        <button id="plantButton">Plant</button>
                     </span>
                 </div>
             </div>
